@@ -1,11 +1,18 @@
 import torch
+import os
 import torch.nn as nn
 import torch.optim as optim
 from translation_engine.core.config import Config
 from translation_engine.data.dataloader import DataLoader
-from translation_engine.model import LSRCrossEntropy
 from translation_engine.model.BIALinguaNet import BIALinguaNet
-from translation_engine.model.utils import live_plot_dual, load_checkpoint, save_checkpoint, trainer, validator
+from translation_engine.model.LSRCrossEntropy import LSRCrossEntropy
+from translation_engine.model.utils import (
+    live_plot_dual,
+    load_checkpoint,
+    save_checkpoint,
+    trainer,
+    validator,
+)
 
 
 # Build configs
@@ -18,14 +25,16 @@ train_loader = DataLoader(
     s_suffix=config.s_suffix,
     t_suffix=config.t_suffix,
     split="train",
-    toks_in_batch=config.toks_in_batch)
+    toks_in_batch=config.toks_in_batch,
+)
 
 val_loader = DataLoader(
     data_dir=config.data_dir,
     s_suffix="dr",
     t_suffix="en",
     split="val",
-    toks_in_batch=config.toks_in_batch)
+    toks_in_batch=config.toks_in_batch,
+)
 
 # Initialize model or load checkpoint
 model = BIALinguaNet(
@@ -38,28 +47,31 @@ model = BIALinguaNet(
     exp_fac=config.exp_fac,
     max_seq_len=config.max_seq_len,
     d_rate=config.d_rate,
-    device=config.device)
+    device=config.device,
+)
 
 optimizer = torch.optim.Adam(
     params=[p for p in model.parameters() if p.requires_grad],
     lr=config.lr,
     betas=config.betas,
     eps=config.eps,
-    weight_decay=config.weight_decay)
+    weight_decay=config.weight_decay,
+)
 
 
 if os.path.exists(config.checkpoints_path):
-    model, optimizer, start_epoch = load_checkpoint(
+    model, optimizer, config.start_epoch = load_checkpoint(
         file_path=config.checkpoints_path,
         model=model,
         optimizer=optimizer,
-        device=config.device)
+        device=config.device,
+    )
     print("Model loaded from checkpoint ...")
 else:
     print("Model loaded from scratch ...")
 
 # Loss function
-criterion = LSRCrossEntropy(eps=config.label_smoothing)
+criterion = LSRCrossEntropy(eps=config.label_smoothing, device=config.device)
 
 # Move to default device
 model = model.to(config.device)
@@ -78,30 +90,30 @@ stats = {
 }
 
 print("traing started ...")
-for epoch in range(start_epoch, epochs):
+for epoch in range(config.start_epoch, epochs):
     step = epoch * train_loader.n_batches // config.batches_per_step
 
     train_loader.create_batches()
     val_loader.create_batches()
 
-    train_losses = trainer(train_loader=train_loader,
-                         model=model,
-                         criterion=criterion,
-                         optimizer=optimizer,
-                         epoch=epoch,
-                         step=step,
-                         device=config.device,
-                         batches_per_step=config.batches_per_step,
-                         epochs=epochs,
-                         warmup_steps=config.warmup_steps,
-                         n_emb=config.n_emb,
-                         grad_clip=config.grad_clip)
-
-    val_losses = validator(
-        val_loader=val_loader,
+    train_losses = trainer(
+        train_loader=train_loader,
         model=model,
         criterion=criterion,
-        device=config.device)
+        optimizer=optimizer,
+        epoch=epoch,
+        step=step,
+        device=config.device,
+        batches_per_step=config.batches_per_step,
+        epochs=epochs,
+        warmup_steps=config.warmup_steps,
+        n_emb=config.n_emb,
+        grad_clip=config.grad_clip,
+    )
+
+    val_losses = validator(
+        val_loader=val_loader, model=model, criterion=criterion, device=config.device
+    )
 
     stats["train_loss_value"].append(train_losses.value)
     stats["train_loss_avg"].append(train_losses.avg)

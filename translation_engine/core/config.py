@@ -4,7 +4,7 @@ from translation_engine.model.utils import get_lr
 class Config:
     def __init__(self):
         # Data parameters
-        self.data_dir = '/kaggle/input/english-darija-arabizi-dataset/'
+        self.data_dir = './translation_engine/src/dataset'
         self.s_suffix = "dr"
         self.t_suffix = "en"
 
@@ -20,7 +20,7 @@ class Config:
         self.d_rate = 0.2  
 
         # Learning parameters
-        self.checkpoints_path = f"/kaggle/working/{self.s_suffix}_{self.t_suffix}_chpts.pth.tar"
+        self.checkpoints_path = f"./translation_engine/src/{self.s_suffix}_{self.t_suffix}_chpts.pth.tar"
         self.toks_in_batch = 1000
         self.batches_per_step = 25000 // self.toks_in_batch
         self.n_steps = 100000

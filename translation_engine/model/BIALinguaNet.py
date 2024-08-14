@@ -3,6 +3,9 @@ from torch import nn
 import torch.nn.functional as F
 import math
 
+from translation_engine.model.Decoder import Decoder
+from translation_engine.model.Encoder import Encoder
+
 
 class BIALinguaNet(nn.Module):
     def __init__(

@@ -1,5 +1,8 @@
+import math
 import torch
 from torch import nn
+from translation_engine.model.ResFFNet import ResFFNet
+from translation_engine.model.ResMHAtten import ResMHAtten
 
 class Encoder(nn.Module):
     def __init__(

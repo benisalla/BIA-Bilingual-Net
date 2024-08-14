@@ -1,10 +1,10 @@
 import gc
+import time
 import torch
 import torch.nn as nn
 from IPython.display import display, clear_output
 import matplotlib.pyplot as plt
 import math
-from torch.nn.utils import clip_grad_norm_
 
 
 def get_lr(step: int, n_emb: int, warmup_steps: int) -> float:
@@ -100,11 +100,7 @@ def live_plot_dual(data_dict, figsize=(12, 5), title=""):
     plt.show()
 
 
-def validator(
-    val_loader, 
-    model, 
-    criterion, 
-    device):
+def validator(val_loader, model, criterion, device):
     model.eval()
 
     with torch.no_grad():

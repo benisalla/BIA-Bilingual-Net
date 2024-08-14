@@ -1,7 +1,11 @@
+import math
 import torch
 from torch import nn
 from torch.nn import functional as F
 from typing import Optional
+
+from translation_engine.model.ResFFNet import ResFFNet
+from translation_engine.model.ResMHAtten import ResMHAtten
 
 class Decoder(nn.Module):
     def __init__(

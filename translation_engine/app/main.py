@@ -1,11 +1,9 @@
 import streamlit as st
-import torch
+import time
 from translation_engine.app.HTMLS import SMILE_SPINNER
 from translation_engine.app.utils import (
     add_background_image,
     init_session_state,
-    load_model,
-    load_tokenizer,
 )
 
 
@@ -122,7 +120,8 @@ def main():
         st.session_state.best_hypo = best_hypo
         st.session_state.all_hypos = all_hypos
 
-        # spinner_holder.empty()
+        time.sleep(2)
+        spinner_holder.empty()
 
     if "best_hypo" in st.session_state and st.session_state.best_hypo:
         if st.session_state.best_hypo:

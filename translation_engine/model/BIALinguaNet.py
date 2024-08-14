@@ -51,7 +51,7 @@ class BIALinguaNet(nn.Module):
         self.exp_fac = exp_fac
         self.max_seq_len = max_seq_len
         self.d_rate = d_rate
-        self.device = device if torch.cuda.is_available() else 'cpu'
+        self.device = device if torch.cuda.is_available() else "cpu"
 
         self.encoder = Encoder(
             ev_size=ev_size,
@@ -146,11 +146,13 @@ class BIALinguaNet(nn.Module):
         self,
         sx,
         tokenizer,
-        temperature=1.0,
-        beam_size=4,
-        len_norm_coeff=0.6,
-        is_ltr=False,
-        max_beam_fork=128,
+        temperature: float = 0.0,
+        beam_size: int = 4,
+        len_norm_coeff: float = 0.6,
+        top_k: int = 50,
+        top_p: float = 0.95,
+        is_ltr: bool = False,
+        max_beam_fork: int = 128,
     ):
         """
         Perform translation using beam search decoding.
@@ -206,8 +208,11 @@ class BIALinguaNet(nn.Module):
                     e_x=ex.repeat(s, 1, 1),
                     e_seq_len=e_seq_len.repeat(s),
                 )  # [s, step, vs]
-                scores = logits[:, -1, :] / temperature  # [s, vs]
-                scores = F.log_softmax(scores, dim=-1)  # [s, vs]
+                flogits = self.top_k_top_p_filtering(
+                    logits=logits[:, -1, :], top_k=top_k, top_p=top_p
+                )
+                scores = flogits / max(temperature + 1.0, 1e-8)  # [s, vs]
+                scores = F.log_softmax(scores, dim=-1)      # [s, vs]
                 scores = hypo_scores.unsqueeze(1) + scores  # prev scores + curr scores
 
                 top_k_hypo_scores, fttn_idx = scores.view(-1).topk(
@@ -215,7 +220,7 @@ class BIALinguaNet(nn.Module):
                 )  # top(vs) = k
 
                 prev_tok_idx = fttn_idx // vs  # prev [k]
-                next_tok_idx = fttn_idx % vs  # next [k]
+                next_tok_idx = fttn_idx % vs   # next [k]
 
                 top_k_hypo = torch.cat(
                     [hypo[prev_tok_idx], next_tok_idx.unsqueeze(1)], dim=1
@@ -270,3 +275,39 @@ class BIALinguaNet(nn.Module):
             best_hypo = all_hypos[max_idx]["hypothesis"]
 
             return best_hypo, all_hypos
+
+    def top_k_top_p_filtering(
+        self,
+        logits: torch.Tensor,
+        top_k: int = 0,
+        top_p: float = 1.0,
+        filter_value: float = -float("Inf"),
+        min_tokens_to_keep: int = 1,
+    ) -> torch.Tensor:
+        if top_k > 0:
+            top_k = min(max(top_k, min_tokens_to_keep), logits.size(-1))  # Safety check
+            # Remove all tokens with a probability less than the last token of the top-k
+            indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
+            logits[indices_to_remove] = filter_value
+
+        if top_p < 1.0:
+            sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+            cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+
+            # Remove tokens with cumulative probability above the threshold (token with 0 are kept)
+            sorted_indices_to_remove = cumulative_probs > top_p
+            if min_tokens_to_keep > 1:
+                # Keep at least min_tokens_to_keep (set to min_tokens_to_keep-1 because we add the first one below)
+                sorted_indices_to_remove[..., :min_tokens_to_keep] = 0
+            # Shift the indices to the right to keep also the first token above the threshold
+            sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[
+                ..., :-1
+            ].clone()
+            sorted_indices_to_remove[..., 0] = 0
+
+            # scatter sorted tensors to original indexing
+            indices_to_remove = sorted_indices_to_remove.scatter(
+                1, sorted_indices, sorted_indices_to_remove
+            )
+            logits[indices_to_remove] = filter_value
+        return logits

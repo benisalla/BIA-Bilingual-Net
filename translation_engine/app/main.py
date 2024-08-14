@@ -44,7 +44,7 @@ def main():
 
     in_text = st.text_area(
         "",
-        height=40,
+        height=20,
         max_chars=500,
         placeholder="Type your text here...",
         help="Enter the text you want to translate.",
@@ -72,11 +72,16 @@ def main():
         unsafe_allow_html=True,
     )
     temperature = st.sidebar.slider(
-        "Temperature:", min_value=0.1, max_value=1.0, value=1.0, step=0.01
+        "Temperature:", min_value=0.0, max_value=10.0, value=0.0, step=0.01
     )
+
     top_k = st.sidebar.slider(
-        "Top-K Sampling:", min_value=1, max_value=6, value=1, step=1
+        "Top-K Sampling:", min_value=10, max_value=200, value=50, step=1
     )
+    top_p = st.sidebar.slider(
+        "Top-P Sampling:", min_value=0.0, max_value=1.0, value=0.95, step=0.01
+    )
+
     beam_size = st.sidebar.slider(
         "Beam Size:", min_value=1, max_value=10, value=4, step=1
     )
@@ -113,14 +118,16 @@ def main():
             temperature=temperature,
             beam_size=beam_size,
             len_norm_coeff=len_norm_coeff,
+            top_k=top_k,
+            top_p=top_p,
             is_ltr=False,
             max_beam_fork=max_beam_fork,
         )
-        
+
         st.session_state.best_hypo = best_hypo
         st.session_state.all_hypos = all_hypos
 
-        time.sleep(2)
+        time.sleep(1.0)
         spinner_holder.empty()
 
     if "best_hypo" in st.session_state and st.session_state.best_hypo:
@@ -137,7 +144,9 @@ def main():
             )
 
             with st.expander("Show All Hypotheses"):
-                sorted_hypos = sorted(st.session_state.all_hypos, key=lambda x: x['score'], reverse=True)
+                sorted_hypos = sorted(
+                    st.session_state.all_hypos, key=lambda x: x["score"], reverse=True
+                )
                 for hypo in sorted_hypos:
                     st.markdown(
                         f"""

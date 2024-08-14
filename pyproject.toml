@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "BIA-Bilingual-Net"
+version = "0.1.0"
+description = "BIA-BilingualNet is a flexible and powerful neural network architecture, carefully designed to perform language-to-language translation effectively."
+authors = ["Ben alla ismail <ismailbenalla@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+run-streamlit = "translation_engine.app.main:main"

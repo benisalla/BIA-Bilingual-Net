@@ -1,0 +1,41 @@
+# Ignore cache files
+__pycache__/
+/__pycache__/
+*.pyc
+*./ipynb
+
+# Ignore specific directories
+translation_engine/app/abc_dir/
+
+translation_engine/src/checkpoints/
+translation_engine/src/dataset/
+translation_engine/src/tokenizer/
+
+# Ignore specific file types
+*.sf2
+*.mid
+*.json
+*.txt
+
+# Ignore large files (common large file types)
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.mp4
+*.mp3
+*.wav
+*.flac
+*.mov
+*.avi
+*.mkv
+
+# Ignore binary files
+*.exe
+*.dll
+*.so
+*.bin
+*.dat
+*.o
+*.a
+*.lib

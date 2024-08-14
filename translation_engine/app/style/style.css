@@ -13,25 +13,6 @@
 }
 
 
-.input-section {
-    background: linear-gradient(135deg, #0009, #0009);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 3px 3px 32px rgba(255, 255, 255, 0.93);
-    text-align: center;
-    margin: 30px auto;
-    color: #fff;
-    font-family: 'Roboto', sans-serif;
-}
-
-.input-instructions {
-    font-size: 22px;
-    font-weight: 501;
-    padding: 0;
-    margin: 0;
-}
-
-
 .title {
     color: white;
     font-size: 2.5em;
@@ -45,56 +26,6 @@
     text-align: center;
     margin-bottom: 20px;
 }
-
-.sidebar-header {
-    font-size: 1.2em;
-    color: white;
-    margin-bottom: 10px;
-}
-
-.audio-container {
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 10px;
-    border-radius: 10px;
-    margin-top: 10px;
-    text-align: center;
-    font-size: 1.2em;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.download-link {
-    color: #007bff;          
-    text-decoration: none;   
-    padding: 8px;            
-    border-radius: 0;        
-    display: inline;         
-    margin: 0;               
-    transition: color 0.3s ease; 
-}
-
-.download-link:hover {
-    color: #0056b3; 
-}
-
-
-.expander-text {
-    background-color: rgba(0, 0, 0, 0.69); 
-    padding: 10px;
-    color: #fff; 
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    border-radius: 10px; 
-    box-shadow: 2px 2px 15px rgba(255, 255, 255, 0.34); 
-    margin: 0 0 16px 0; 
-}
-
-.annotation-container {
-    background-color: #0000003a;  
-    border-radius: 8px; 
-    padding: 10px;
-    margin-top: 10px;
-}
-
 
 
 .error-component {
@@ -158,11 +89,6 @@
     padding-bottom: 5px;
 }
 
-.model-type {
-    font-weight: bold;
-    color: #2980b9;
-}
-
 .hr-style {
     margin-top: -1px;
     margin-bottom: 20px;
@@ -170,68 +96,17 @@
     background: linear-gradient(to right, rgba(255,0,0,0), rgba(255,0,0,1), rgba(255,0,0,0));
 }
 
-
-/* ============================ audio ============================ */
-
-#audio {
-    width: 100%;
-    max-width: 600px;
-    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.28);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid #ff4b4b;
-    margin-bottom: -10px;
-}
-
-#audio::-webkit-media-controls-panel {
-    background-color: #ffffff; 
-    border-radius: 10px; 
-    border: none; 
-}
-
-#audio::-webkit-media-controls-play-button,
-#audio::-webkit-media-controls-timeline,
-#audio::-webkit-media-controls-volume-slider {
-    color: #4CAF50; 
-}
-
-#audio::-webkit-media-controls-volume-slider {
-    background-color: #e0e0e0; 
-}
-
-
-#audio::-webkit-media-controls-play-button {
-    opacity: 1; 
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); 
-}
-
-#audio::-moz-focus-inner {
-    border: 0; 
-}
-
-.audio-fallback-style {
-    padding: 10px;
-    background-color: #fff;
-    text-align: center;
-    color: #333;
-    font-family: Arial, sans-serif;
-    border-radius: 10px;
-    display: none;
-}
-
-
-/* ============================== smile - smail :) =============================== */
-
 .smile-spinner-container {
-    font: 1em/1.5 sans-serif;
-    display: grid;
-    place-items: center;
-    transition: background-color #f0f, color #0f0;
-    margin: 0rem auto;
-    background: #00000057;
-    height: 50vh;
-    width: 50vw;
-    border-radius: 1.5rem;
+    width: 200px;
+    height: 200px;
+    position: fixed;
+    z-index: 999;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .smiley {
@@ -242,7 +117,7 @@
 .smiley__eye2,
 .smiley__mouth1,
 .smiley__mouth2 {
-	animation: eye1 3s ease-in-out infinite;
+	animation: eye1 1.2s ease-in-out infinite;
 }
 .smiley__eye1,
 .smiley__eye2 {

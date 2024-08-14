@@ -34,18 +34,10 @@ def load_tokenizer():
 def add_background_image(image_path, st):
     with open(image_path, "rb") as image_file:
         encoded_image = base64.b64encode(image_file.read()).decode()
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/png;base64,{encoded_image}");
-            background-size: cover;
-            background-position: center;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    with open("./translation_engine/app/style/style.css", "r") as css_file:
+        css_content = css_file.read()
+        css_content = css_content.replace("{encoded_image}", encoded_image)
+    st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
 
 
 def init_session_state(st):

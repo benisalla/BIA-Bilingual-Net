@@ -1,23 +1,22 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import CosineAnnealingLR
 from translation_engine.core.config import Config
 from translation_engine.data.dataloader import DataLoader
 from translation_engine.model import LSRCrossEntropy
 from translation_engine.model.BIALinguaNet import BIALinguaNet
-from translation_engine.model.utils import live_plot_dual, load_checkpoint, save_checkpoint, train, trainer, validate, validator
+from translation_engine.model.utils import live_plot_dual, load_checkpoint, save_checkpoint, trainer, validator
+
 
 # Build configs
 config = Config()
-config.device = 
 
 
 # Initialize data-loaders
 train_loader = DataLoader(
     data_dir=config.data_dir,
-    s_suffix="dr",
-    t_suffix="en",
+    s_suffix=config.s_suffix,
+    t_suffix=config.t_suffix,
     split="train",
     toks_in_batch=config.toks_in_batch)
 

@@ -149,7 +149,7 @@ class BIALinguaNet(nn.Module):
         temperature=1.0,
         beam_size=4,
         len_norm_coeff=0.6,
-        is_ar=False,
+        is_ltr=False,
         max_beam_fork=128,
     ):
         """
@@ -161,7 +161,7 @@ class BIALinguaNet(nn.Module):
             temperature (float): Temperature parameter for controlling randomness in predictions.
             beam_size (int): Number of beams to use in beam search.
             len_norm_coeff (float): Length normalization coefficient to balance sentence length during decoding.
-            is_ar (bool): Whether to reverse the output sequence (useful for autoregressive decoding).
+            is_ltr (bool): Whether to reverse the output sequence (useful for autoregressive decoding).
             max_beam_fork (int): Maximum number of steps to consider in beam search.
 
         Returns:
@@ -252,7 +252,7 @@ class BIALinguaNet(nn.Module):
                 tokenizer.bos_token_id,
                 tokenizer.eos_token_id,
             ]
-            if is_ar:
+            if is_ltr:
                 com_hypo = [
                     tokenizer.decode([t for t in s if t not in spec_toks])[::-1]
                     for s in com_hypo

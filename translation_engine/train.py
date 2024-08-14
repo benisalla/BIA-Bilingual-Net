@@ -1,11 +1,10 @@
 import torch
 import os
-import torch.nn as nn
-import torch.optim as optim
 from translation_engine.core.config import Config
 from translation_engine.data.dataloader import DataLoader
 from translation_engine.model.BIALinguaNet import BIALinguaNet
 from translation_engine.model.LSRCrossEntropy import LSRCrossEntropy
+from transformers import AutoTokenizer
 from translation_engine.model.utils import (
     live_plot_dual,
     load_checkpoint,
@@ -17,6 +16,14 @@ from translation_engine.model.utils import (
 
 # Build configs
 config = Config()
+
+# init tokenizer
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+tokenizer.add_special_tokens(
+    {"pad_token": "<PAD>", "bos_token": "<SOS>", "eos_token": "<EOS>"}
+)
+
+config.set_vocab_size(tokenizer=tokenizer)
 
 
 # Initialize data-loaders
@@ -121,4 +128,6 @@ for epoch in range(config.start_epoch, epochs):
     stats["val_loss_avg"].append(val_losses.avg)
 
     live_plot_dual(stats, figsize=(12, 5), title=f"Epoch {epoch + 1}/{epochs}")
-    save_checkpoint(epoch, model, optimizer, file_path=config.checkpoints_path)
+
+    if epoch % 10 == 0 and epoch > 0:
+        save_checkpoint(epoch, model, optimizer, file_path=config.checkpoints_path)

@@ -9,14 +9,14 @@ class Config:
         self.t_suffix = "en"
 
         # Model parameters
-        self.ev_size = 10000
-        self.dv_size = 10000
-        self.n_emb = 512
+        self.ev_size = 1000
+        self.dv_size = 1000
+        self.n_emb = 64
         self.n_head = 16
         self.h_size = self.n_emb // self.n_head
-        self.n_block = 6
-        self.exp_fac = 5
-        self.max_seq_len = 1024
+        self.n_block = 1
+        self.exp_fac = 3
+        self.max_seq_len = 128
         self.d_rate = 0.2  
 
         # Learning parameters

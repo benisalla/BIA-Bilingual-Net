@@ -65,7 +65,6 @@ optimizer = torch.optim.Adam(
     weight_decay=config.weight_decay,
 )
 
-
 if os.path.exists(config.checkpoints_path):
     model, optimizer, config.start_epoch = load_checkpoint(
         file_path=config.checkpoints_path,

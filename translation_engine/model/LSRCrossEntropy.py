@@ -19,7 +19,7 @@ class LSRCrossEntropy(torch.nn.Module):
     def __init__(self, eps: float = 0.1, device: str = "cpu"):
         super(LSRCrossEntropy, self).__init__()
         self.eps = eps
-        self.device = device
+        self.device = device if torch.cuda.is_available() else 'cpu'
 
     def forward(self, x, y, lens):
         """

@@ -2,9 +2,11 @@ import gc
 import time
 import torch
 import torch.nn as nn
-from IPython.display import display, clear_output
+from IPython.display import clear_output
 import matplotlib.pyplot as plt
 import math
+
+from translation_engine.model.BIALinguaNet import BIALinguaNet
 
 
 def get_lr(step: int, n_emb: int, warmup_steps: int) -> float:
@@ -31,15 +33,26 @@ def save_checkpoint(
 
 def load_checkpoint(
     file_path: str,
-    model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
     device: torch.device,
+    lr: float = 0.001,
+    beta1: float = 0.9,
+    beta2: float = 0.999,
+    eps: float = 1e-8,
+    weight_decay: float = 0.0,
 ):
     checkpoint = torch.load(file_path, map_location=device)
+    init_args = checkpoint["init_args"]
+    model = BIALinguaNet(**init_args)
     model.load_state_dict(checkpoint["model_state_dict"])
+    optimizer = torch.optim.Adam(
+        params=[p for p in model.parameters() if p.requires_grad],
+        lr=lr,
+        betas=(beta1, beta2),
+        eps=eps,
+        weight_decay=weight_decay,
+    )
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
     start_epoch = checkpoint["epoch"] + 1
-
     model = model.to(device)
     return model, optimizer, start_epoch
 

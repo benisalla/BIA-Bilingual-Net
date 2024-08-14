@@ -41,7 +41,7 @@ class Config:
         self.dv_size = self.ev_size
 
     def __repr__(self):
-        return (f"<Config data_dir={self.data_dir}, checkpoint_path={self.checkpoint_path}, "
+        return (f"<Config data_dir={self.data_dir}, checkpoint_path={self.checkpoints_path}, "
                 f"ev_size={self.ev_size}, dv_size={self.dv_size}, n_emb={self.n_emb}, n_head={self.n_head}, "
                 f"h_size={self.h_size}, n_block={self.n_block}, exp_fac={self.exp_fac}, "
                 f"max_seq_len={self.max_seq_len}, d_rate={self.d_rate}, toks_in_batch={self.toks_in_batch}, "

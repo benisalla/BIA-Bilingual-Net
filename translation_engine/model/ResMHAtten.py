@@ -34,7 +34,7 @@ class ResMHAtten(nn.Module):
         self.n_head = n_head
         self.h_size = h_size
         self.is_decoder = is_decoder
-        self.device = device
+        self.device = device if torch.cuda.is_available() else 'cpu'
 
         self.q_proj = nn.Linear(n_emb, n_head * h_size)
         self.kv_proj = nn.Linear(n_emb, n_head * (h_size + h_size))

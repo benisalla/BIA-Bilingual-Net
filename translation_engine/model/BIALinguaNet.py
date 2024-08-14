@@ -51,7 +51,7 @@ class BIALinguaNet(nn.Module):
         self.exp_fac = exp_fac
         self.max_seq_len = max_seq_len
         self.d_rate = d_rate
-        self.device = device
+        self.device = device if torch.cuda.is_available() else 'cpu'
 
         self.encoder = Encoder(
             ev_size=ev_size,
@@ -95,8 +95,6 @@ class BIALinguaNet(nn.Module):
         )
         self.decoder.tok_emb.weight = self.encoder.tok_emb.weight
         self.decoder.fc.weight = self.decoder.tok_emb.weight
-
-        print("Our BIALinguaNet Model initialized ...")
 
     def forward(
         self,

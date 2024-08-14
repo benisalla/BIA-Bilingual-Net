@@ -49,7 +49,7 @@ class Decoder(nn.Module):
         self.n_block = n_block
         self.d_rate = d_rate
         self.exp_fac = exp_fac
-        self.device = device
+        self.device = device if torch.cuda.is_available() else 'cpu'
         self.max_seq_len = max_seq_len
 
         self.tok_emb = nn.Embedding(dv_size, n_emb)

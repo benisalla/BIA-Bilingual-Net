@@ -113,8 +113,8 @@ def main():
         spinner_holder.markdown(SMILE_SPINNER, unsafe_allow_html=True)
 
         best_hypo, all_hypos = model.translate(
-            in_text,
-            st.session_state.tokenizer,
+            sx=in_text.strip(),
+            tokenizer=st.session_state.tokenizer,
             temperature=temperature,
             beam_size=beam_size,
             len_norm_coeff=len_norm_coeff,
@@ -127,7 +127,6 @@ def main():
         st.session_state.best_hypo = best_hypo
         st.session_state.all_hypos = all_hypos
 
-        time.sleep(1.0)
         spinner_holder.empty()
 
     if "best_hypo" in st.session_state and st.session_state.best_hypo:

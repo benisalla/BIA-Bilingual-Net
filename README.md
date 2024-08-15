@@ -17,6 +17,7 @@
 - [Translation Examples](#translation-examples)
 - [License](#license)
 - [About Me](#about-me)
+- [Connect with Me](#connect-with-me)
 
 ---
 
@@ -210,22 +211,23 @@ This project is made available under **fair use guidelines**. While there is no 
 }
 ```
 
+
 ---
+
 
 ## About Me
 
-🎓 **Ismail Ben Alla** - AI and NLP Enthusiast
+🎓 **Ismail Ben Alla** - AI, NLP, and Computer Vision Junior Engineer
 
-As a dedicated advocate for artificial intelligence and natural language processing, I am deeply committed to exploring their potential to bridge language barriers and connect cultures. My academic and professional pursuits reflect a relentless dedication to advancing knowledge in AI, deep learning, and machine learning technologies.
+I am a student at **École Centrale de Lyon**, deeply passionate about artificial intelligence (AI), Computer vision and natural language processing (NLP). My academic and professional journey showcases a dedicated commitment to exploring AI’s potential to bridge language barriers and connect cultures. I love building things from scratch and i am particularly enthusiastic about training neural networks and watch them learning and fix their issues.
 
-### Core Motivations
-- **Innovation in AI and Translation**: Driven to expand the frontiers of technology and unlock novel insights across languages.
-- **Lifelong Learning**: Actively engaged in mastering the latest technological developments.
-- **Future-Oriented Vision**: Fueled by the transformative potential and future prospects of AI and language technology.
+In my pursuit of knowledge, I am driven to advance AI, deep learning, and machine learning technologies, constantly seeking innovative solutions that push the boundaries of what's possible in the tech world.
 
-I am profoundly passionate about my work and optimistic about the future contributions of AI in language processing.
 
-**Let's connect and explore the vast potential of artificial intelligence and translation together!**
+---
+
+### Connect with Me
+
 <div align="center">
   <a href="https://twitter.com/ismail_ben_alla" target="_blank">
     <img src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/twitter.svg" alt="ismail_ben_alla" height="60" width="60" />
@@ -238,4 +240,12 @@ I am profoundly passionate about my work and optimistic about the future contrib
   <a href="https://instagram.com/ismail_ben_alla" target="_blank">
     <img src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/instagram.svg" alt="Instagram Profile" height="60" width="60" />
   </a>
+</div>
+
+
+---
+
+<div align="center">
+  <h4>🎵✨🎶 Hit play and let the magic begin—watch notes turn into symphonies! 🎵✨🎶</h4>
+  <img src="https://github.com/benisalla/music_generator_with_3_nlp_algorithms/assets/89405673/bd46df2e-e267-41af-8e6f-558cc7eac38b" width="500" height="400"/>
 </div>

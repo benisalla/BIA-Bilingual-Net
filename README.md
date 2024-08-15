@@ -242,10 +242,12 @@ In my pursuit of knowledge, I am driven to advance AI, deep learning, and machin
   </a>
 </div>
 
-
 ---
 
 <div align="center">
   <h4>🌐📚🔁 Dive into the world of language with BIA LinguaNet—experience seamless Moroccan Darija to English translations and vice versa! 🌐📚🔁</h4>
-  <img src="https://github.com/user-attachments/assets/96de5cb2-8dbf-4b58-8688-e803c8ff9a8d" width="500" height="400"/>
+  <img src="https://github.com/user-attachments/assets/b7e5feab-642d-4b22-a82b-3cbe5b0a1fe4" width="500" height="400"/>
 </div>
+
+
+

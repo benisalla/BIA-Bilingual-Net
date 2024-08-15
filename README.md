@@ -40,40 +40,58 @@ The model is versatile, allowing adjustments to meet various language and transl
 
 ## Features
 
-- **Modular Design**: Clear separation of components such as data processing, model architecture, and training scripts.
-- **Interactive Translation Demo**: Enables real-time testing of translation capabilities.
-- **Download Capability**: Allows users to download translated texts.
-- **Customizable**: Easily adapt the architecture and data pipelines for different language pairs.
-- **Poetry for Dependency Management**: Utilizes Poetry for straightforward and dependable package management.
-
+- **Bilingual Translation**: Supports translation between English and Darija, allowing users to switch seamlessly between the two languages.
+- **Adjustable Model Settings**: Users can fine-tune the translation output by adjusting parameters such as temperature, top-k sampling, top-p sampling, beam size, and length normalization coefficient.
+- **Real-time Translation**: Provides immediate translation results with an interactive interface that displays both the input and output texts.
+- **Multiple Hypotheses Display**: Shows alternative translation hypotheses with associated confidence scores, giving users a range of translation options.
+- **User-Friendly Interface**: The app features a visually appealing and intuitive design, making it easy for users to interact with the translation tool.
+- **Customizable Translation Settings**: Allows users to control the translation process in detail, tailoring the output to their specific needs.
 ---
 
 ## Project Structure
 ```
-BIALinguaNet
+BIA-BILINGUAL-NET
 │
-├── app
-│   ├── (app contents might include specific scripts and styles)
+├── translation_engine
+│   ├── app               # Contains the application-specific scripts and styles
+│   │   ├── style         # Directory for styling components used in the application
+│   │   │   ├── style.css     # CSS file to define the visual appearance of the app
+│   │   ├── HTML5.py      # Script for handling HTML5 elements within the app
+│   │   ├── main.py       # Main application script, likely responsible for launching the app
+│   │   ├── utils.py      # Utility functions that support the app's operations
+│   │
+│   ├── core              # Core functionalities such as configurations and shared utilities
+│   │   ├── config.py     # Configuration file for setting up parameters and options
+│   │
+│   ├── data              # Data handling scripts, data preprocessing, and resource management
+│   │   ├── dataloader.py # Script responsible for loading and managing datasets
+│   │
+│   ├── model             # Model definition files, including neural network architectures
+│   │   ├── BIALinguaNet.py   # Main architecture of the BIA LinguaNet model
+│   │   ├── Decoder.py        # Script defining the decoder part of the neural network
+│   │   ├── Encoder.py        # Script defining the encoder part of the neural network
+│   │   ├── LSRNetwork.py     # Script for Label Smoothing Cross-Entropy, a loss function
+│   │   ├── ResFFNet.py       # Script for a Residual FeedForward Network used in the model
+│   │   ├── ResMHAtten.py     # Script for a Residual Multi-Head Attention mechanism
+│   │   ├── utils.py          # Utility functions supporting model-related tasks
 │
-├── core
-│   ├── (core functionalities such as configurations or shared utilities)
+├── src               # Source files for the main application logic
+│   ├── checkpoints   # Directory to store model checkpoints during training
+│   │   ├── dr_en_chpts.pth.tar  # Checkpoint file for the Darija to English model
+│   │   ├── en_dr_chpts.pth.tar  # Checkpoint file for the English to Darija model
+│   │
+│   ├── dataset       # Scripts and modules for dataset preparation and loading
+│   │   ├── train.json  # Training data in JSON format
+│   │   ├── val.json    # Validation data in JSON format
+│   │
+│   ├── img           # Storage for any images used within the project
 │
-├── data
-│   ├── (data handling scripts and resources)
+│   ├── tests         # Test scripts for unit testing and model validation
 │
-├── model
-│   ├── (model definition files, perhaps including various neural network architectures)
-│
-├── src
-│   ├── checkpoints       # Directory to store model checkpoints during training
-│   ├── dataset           # Scripts and modules for dataset preparation and loading
-│   ├── img               # Storage for any images used within the project
-│   ├── tests             # Test scripts for testing the codebase, models, etc.
-│
-├── finetune.py           # Script to fine-tune the model on new or additional data
-├── train.py              # Main training script for the models
-├── .gitignore            # Specifies untracked files that Git should ignore
-├── poetry.lock           # Lock file for dependencies managed by Poetry
+├── finetune.py           # Script for fine-tuning the model on new or additional data
+├── train.py              # Main training script for training the models
+├── .gitignore            # Specifies files and directories for Git to ignore
+├── poetry.lock           # Lock file for dependency management by Poetry
 ├── pyproject.toml        # Project metadata and configuration settings for Poetry
 └── README.md             # Comprehensive project overview and setup instructions
 

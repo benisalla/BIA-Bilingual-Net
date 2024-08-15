@@ -246,6 +246,6 @@ In my pursuit of knowledge, I am driven to advance AI, deep learning, and machin
 ---
 
 <div align="center">
-  <h4>🎵✨🎶 Hit play and let the magic begin—watch notes turn into symphonies! 🎵✨🎶</h4>
-  <img src="https://github.com/benisalla/music_generator_with_3_nlp_algorithms/assets/89405673/bd46df2e-e267-41af-8e6f-558cc7eac38b" width="500" height="400"/>
+  <h4>🌐📚🔁 Dive into the world of language with BIA LinguaNet—experience seamless Moroccan Darija to English translations and vice versa! 🌐📚🔁</h4>
+  <img src="https://github.com/user-attachments/assets/96de5cb2-8dbf-4b58-8688-e803c8ff9a8d" width="500" height="400"/>
 </div>

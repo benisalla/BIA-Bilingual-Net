@@ -1,8 +1,9 @@
 <div align="center">
-  <img src="https://github.com/benisalla/BIALinguaNet/assets/logo.png" width="200" height="200"/>
+  <img src="https://github.com/user-attachments/assets/9b132fc8-bf47-4447-923c-06ada44c9985" width="200" height="200"/>
   <h1>BIALinguaNet: Transformer-based Language Translation Architecture</h1>
   <p>Implementing a language translation model using Transformer technology from scratch.</p>
 </div>
+
 
 ---
 

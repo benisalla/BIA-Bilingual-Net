@@ -146,11 +146,54 @@ poetry run python finetune.py
 
 ---
 
+
 ### Translation Examples
 
-Here are some examples of translations performed by the BIALinguaNet model:
+Below are demonstrations of translations performed by the BIALinguaNet model, showcasing its capabilities for both English to Darija (En to Dr) and Darija to English (Dr to En) translations.
 
-[Translation Example Links]
+#### Scripts Used for Generating Examples:
+
+```
+def translate_all(sentences, model, tokenizer):
+
+    translations = []
+    for sentence in sentences:
+        best_hypo, _ = model.translate(
+            sx=sentence,
+            tokenizer=tokenizer,
+            temperature=1.0,  
+            beam_size=4,
+            len_norm_coeff=0.6,
+            top_k=50,
+            top_p=0.95,
+            is_ltr=False,
+            max_beam_fork=128
+        )
+        translations.append((sentence, best_hypo))
+    return translations
+
+def display_translations(translated_pairs):
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+
+    print(HEADER + BOLD + "Translations" + ENDC)
+    for darija, english in translated_pairs:
+        print(f"{OKBLUE}Darija:{ENDC} {darija.ljust(30)} {OKGREEN}English:{ENDC} {english}")
+
+```
+
+#### Visual Examples:
+The following images provide visual confirmations of the translations facilitated by BIALinguaNet:
+
+**From Darija to English:**
+![Darija to English Translation Example](https://github.com/user-attachments/assets/d2ea08ac-e727-4694-871e-aa168d73a70e)
+
+**From English to Darija:**
+![English to Darija Translation Example](https://github.com/user-attachments/assets/ebee4b4c-d64c-4691-b151-571640b4c0ff)
+
 
 ---
 

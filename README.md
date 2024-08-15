@@ -217,9 +217,9 @@ This project is made available under **fair use guidelines**. While there is no 
 
 ## About Me
 
-🎓 **Ismail Ben Alla** - AI, NLP, and Computer Vision Junior Engineer
+🎓 **Ismail Ben Alla** - AI, NLP, and Computer Vision Junior Engineer Graduated From **École nationale des sciences appliquées de Fès** and currently a student at **École Centrale de Lyon**
 
-I am a student at **École Centrale de Lyon**, deeply passionate about artificial intelligence (AI), Computer vision and natural language processing (NLP). My academic and professional journey showcases a dedicated commitment to exploring AI’s potential to bridge language barriers and connect cultures. I love building things from scratch and i am particularly enthusiastic about training neural networks and watch them learning and fix their issues.
+Deeply passionate about artificial intelligence (AI), Computer vision and natural language processing (NLP). My academic and professional journey showcases a dedicated commitment to exploring AI’s potential to bridge language barriers and connect cultures. I love building things from scratch and i am particularly enthusiastic about training neural networks and watch them learning and fix their issues.
 
 In my pursuit of knowledge, I am driven to advance AI, deep learning, and machine learning technologies, constantly seeking innovative solutions that push the boundaries of what's possible in the tech world.
 

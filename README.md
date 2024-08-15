@@ -1,13 +1,13 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/9b132fc8-bf47-4447-923c-06ada44c9985" width="200" height="200"/>
-  <h1>BIALinguaNet: Transformer-based Language Translation Architecture</h1>
-  <p>Implementing a language translation model using Transformer technology from scratch.</p>
+  <h1>BIALinguaNet: Transformer-Based Language Translation Architecture</h1>
+  <p>A custom implementation of a language translation model using Transformer architecture, enhanced with some fancy modifications. 😁</p>
 </div>
 
 
 ---
 
-## Table of Contents 📘
+## Table of Contents
 - [About The Project](#about-the-project)
 - [Features](#features)
 - [Project Structure](#project-structure)
@@ -23,9 +23,14 @@
 ## About The Project
 
 <div align="center">
-  <h3>App Interface Preview</h3>
-  <img src="https://github.com/user-attachments/assets/443d2b72-5b76-447e-aae9-c6edac18580e" width="600" height="300"/>
+  <h3>What A demo Video</h3>
+  <a href="https://youtu.be/tUHztFYTZ2U" target="_blank">
+    <img src="https://img.youtube.com/vi/tUHztFYTZ2U/0.jpg" width="600" alt="YouTube Video Demo"/>
+  </a>
+  <p><em>Click the image above to watch the video on YouTube.</em></p>
 </div>
+
+
 BIALinguaNet uses powerful Transformer architectures to provide a reliable language translation system. Designed with simplicity and effectiveness in mind, this project makes it easier to develop neural networks for natural language processing, suitable for both academic research and practical use.
 
 The model is versatile, allowing adjustments to meet various language and translation needs. By changing the transformer's input settings and the formats of the data being translated, users can customize the system to fit their specific requirements.

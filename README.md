@@ -47,31 +47,31 @@ The model is versatile, allowing adjustments to meet various language and transl
 ```
 BIALinguaNet
 │
-├── translated_texts
-├── translation_architecture
-│   ├── app
-│   ├── core
-│   ├── data
-│   ├── model
-│   │   ├── Transformer
-│   └── src
-│       ├── checkpoints
-│       ├── dataset
-│       └── tokenizer
-├── tests
-│   ├── model
-│   └── tokenizer
-├── tokenizing
-│   └── tokenizer
-│       ├── __init__.py
-│       ├── AdvancedTokenizer.py
-│       ├── BIALTokenizer.py
-│       ├── train_advanced_tokenizer.py
-│       └── train_bia_tokenizer.py
-├── finetune.py
-├── train.py
-├── .gitignore
-└── README.md
+├── app
+│   ├── (app contents might include specific scripts and styles)
+│
+├── core
+│   ├── (core functionalities such as configurations or shared utilities)
+│
+├── data
+│   ├── (data handling scripts and resources)
+│
+├── model
+│   ├── (model definition files, perhaps including various neural network architectures)
+│
+├── src
+│   ├── checkpoints       # Directory to store model checkpoints during training
+│   ├── dataset           # Scripts and modules for dataset preparation and loading
+│   ├── img               # Storage for any images used within the project
+│   ├── tests             # Test scripts for testing the codebase, models, etc.
+│
+├── finetune.py           # Script to fine-tune the model on new or additional data
+├── train.py              # Main training script for the models
+├── .gitignore            # Specifies untracked files that Git should ignore
+├── poetry.lock           # Lock file for dependencies managed by Poetry
+├── pyproject.toml        # Project metadata and configuration settings for Poetry
+└── README.md             # Comprehensive project overview and setup instructions
+
 ```
 
 ---
@@ -100,7 +100,7 @@ Follow these simple steps to get a local copy up and running.
 To launch the application, execute the following command:
 
 ```sh
-poetry run streamlit run translation_architecture/app/main.py
+poetry run streamlit run translation_engine/app/main.py
 ```
 
 ### Training

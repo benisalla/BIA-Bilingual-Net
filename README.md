@@ -23,13 +23,13 @@
 ## About The Project
 
 <div align="center">
-  <h3>Interface of our app</h3>
-  <img src="https://github.com/benisalla/BIALinguaNet/assets/interface.png" width="600" height="300"/>
+  <h3>App Interface Preview</h3>
+  <img src="https://github.com/user-attachments/assets/443d2b72-5b76-447e-aae9-c6edac18580e" width="600" height="300"/>
 </div>
+BIALinguaNet uses powerful Transformer architectures to provide a reliable language translation system. Designed with simplicity and effectiveness in mind, this project makes it easier to develop neural networks for natural language processing, suitable for both academic research and practical use.
 
-BIALinguaNet offers a focused implementation of language translation using advanced Transformer architectures. This project is designed to provide an intuitive, effective approach to neural network development for natural language processing, suitable for both research and practical applications.
+The model is versatile, allowing adjustments to meet various language and translation needs. By changing the transformer's input settings and the formats of the data being translated, users can customize the system to fit their specific requirements.
 
-The model can be adapted for various languages and translation types by modifying the transformer's input configurations.
 
 ---
 

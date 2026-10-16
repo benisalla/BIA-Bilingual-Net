@@ -30,6 +30,7 @@ Darija ⇄ English sentence pairs and served in a Streamlit app.
 - [Fine-Tuning](#fine-tuning)
 - [Training on Kaggle / Colab (notebook)](#training-on-kaggle--colab-notebook)
 - [Tests and Sanity Checks](#tests-and-sanity-checks)
+- [Results: Graphs](#results-graphs)
 - [Translation Examples](#translation-examples)
 - [Changelog: Fixes and Improvements](#changelog-fixes-and-improvements)
 - [License](#license)
@@ -134,6 +135,7 @@ BIA-Bilingual-Net
 │   ├── train_colab_kaggle.ipynb   # self-contained training notebook (Kaggle / Colab)
 │   └── build_notebook.py          # regenerates the notebook from the package code
 ├── tests                      # unit tests and neural-network sanity checks (pytest)
+├── docs/figures               # graphs shown in this README
 ├── pyproject.toml / poetry.lock
 └── README.md
 ```
@@ -200,6 +202,14 @@ empty rows and duplicates (**44,631 pairs**), shuffles them with a fixed seed an
 | `tiny_{train,val,test}.json` | 256 each, for quick checks |
 
 Any other corpus works: a json list of `{"dr": "...", "en": "..."}` objects.
+
+<p align="center">
+  <img src="docs/figures/schedule_and_data.png" width="900" alt="Learning-rate schedule and sentence lengths"/>
+</p>
+
+*Left: the learning rate used by `train.py` (warm-up over 8,000 steps, then 1/√step).
+Right: sentence lengths in GPT-2 tokens. The longest pair has 71 tokens, so the 128-token limit
+never cuts a training sentence. Darija in Latin script needs about twice as many tokens as English.*
 
 ---
 
@@ -274,6 +284,52 @@ poetry run pytest          # 43 tests, CPU only, ~1 minute
 | `tests/test_loss_and_decoding.py` | the label-smoothing loss equals PyTorch's `cross_entropy(label_smoothing=…)` and ignores padding; top-k / top-p filtering; beam search **recovers memorised sentences**, never overflows `max_seq_len`, and ignores tokens removed by top-p |
 | `tests/test_data_and_training.py` | every pair appears once per epoch with `<SOS>`/`<EOS>`; token budget; long / empty pairs dropped; config; lr schedule; **gradient accumulation = one big batch**; token-weighted validation; checkpoint round trip; `fit()` learns; `train.py --overfit` → resume → `finetune.py` → app model, end to end; the **Streamlit app** itself (missing model, then a real translation) |
 | `tests/test_notebook.py` | the notebook embeds the current package code and is valid Python |
+
+---
+
+## Results: Graphs
+
+All graphs below come from the code in this repository, run on a laptop CPU with the real DODa data.
+
+### 1. Sanity checks on the real model (3.4M parameters, 50,260-token vocabulary)
+
+<p align="center">
+  <img src="docs/figures/sanity_init_and_gradients.png" width="950" alt="Initial loss and gradient flow"/>
+</p>
+
+- **Left:** an untrained model should be no better than a uniform guess, so its loss should be
+  about ln(50,260) = 10.82. Over 5 random seeds it is 11.2 to 11.6, which is what we expect.
+- **Right:** after one backward pass on a real batch, **all 16 weight matrices get a non-zero
+  gradient**, from the embeddings to the last feed-forward layer. No part of the network is
+  disconnected.
+
+<p align="center">
+  <img src="docs/figures/sanity_masks.png" width="850" alt="Causal and padding masks"/>
+</p>
+
+We change one input token at a time and look at which output positions change:
+
+- **Decoder (left):** a target token only affects its own position and later ones (lower
+  triangle). The model never sees the future word it has to predict.
+- **Encoder (right):** changing a real source word changes every output, but changing a
+  **padding** token changes nothing (difference exactly 0.0).
+
+### 2. Training works: overfitting a small chunk, then a short real run
+
+<p align="center">
+  <img src="docs/figures/training_curves.png" width="950" alt="Training curves"/>
+</p>
+
+- **Left (`--overfit 32`):** with no dropout and no label smoothing, the loss on 32 real pairs
+  goes from **11.05 (random guess) to 0.006**, and beam search then translates **31 of the 32**
+  sentences back word for word (e.g. `9yydtha, chokran lik mra khra` → `Noted, thank you again.`).
+  The bumps after epoch 25 come from the learning-rate warm-up reaching about 1e-2. `fit()` keeps
+  the checkpoint with the lowest loss, so they do no harm.
+- **Right (default settings, 1,500 training pairs, 16 minutes):** the validation loss on 300
+  sentences the model never saw falls from 8.14 to **6.64** (epoch 8). After that, training loss
+  keeps going down while validation loss stops improving: 1,500 pairs is too little data, and the
+  model starts memorising. `fit()` keeps the best epoch (red dot). With all **41,955** pairs on a
+  GPU (see the notebook), this is the curve to watch.
 
 ---
 

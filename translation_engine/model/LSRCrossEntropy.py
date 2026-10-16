@@ -1,5 +1,4 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence
 
@@ -13,7 +12,7 @@ class LSRCrossEntropy(torch.nn.Module):
 
     Attributes:
         eps (float): The smoothing parameter, which controls the amount of label smoothing applied.
-        device (str): The device on which the computations will be performed ('cpu' or 'cuda').
+        device (str): Kept for backward compatibility; the loss runs on the device of its inputs.
     """
 
     def __init__(self, eps: float = 0.1, device: str = "cpu"):
@@ -35,22 +34,21 @@ class LSRCrossEntropy(torch.nn.Module):
             torch.Tensor: The computed label smoothing cross-entropy loss.
         """
 
-        lens = lens.cpu()
+        lens = lens.cpu()  # pack_padded_sequence wants lengths on the CPU
         x = pack_padded_sequence(
             input=x, lengths=lens, batch_first=True, enforce_sorted=False
-        ).data.to(self.device)
+        ).data  # [n_tokens, C]: only the real (non-padding) positions
         y = pack_padded_sequence(
             input=y, lengths=lens, batch_first=True, enforce_sorted=False
-        ).data.to(self.device)
+        ).data  # [n_tokens]
 
-        tv = (
-            torch.zeros_like(x)
-            .scatter(dim=1, index=y.unsqueeze(1), value=1.0)
-            .to(self.device)
-        )
-        tv = tv * (1.0 - self.eps) + self.eps / tv.size(1)
-
-        loss = (-1 * tv * F.log_softmax(x, dim=1)).sum(dim=1)
-        loss = torch.mean(loss)
+        # smoothed target: (1 - eps) on the true class + eps spread over all C classes.
+        # loss = -sum_c tv_c * log p_c = -(1 - eps) * log p_y - (eps / C) * sum_c log p_c,
+        # computed without building the dense [n_tokens, C] target matrix (C = 50k here)
+        log_p = F.log_softmax(x, dim=1)
+        nll = -log_p.gather(dim=1, index=y.unsqueeze(1)).squeeze(1)
+        smooth = -log_p.mean(dim=1)
+        loss = (1.0 - self.eps) * nll + self.eps * smooth
+        loss = torch.mean(loss)  # mean over real tokens
 
         return loss

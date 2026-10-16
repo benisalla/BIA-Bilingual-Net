@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import math
+from typing import Optional
 
 
 class ResMHAtten(nn.Module):
@@ -16,7 +16,7 @@ class ResMHAtten(nn.Module):
         n_head (int): The number of attention heads.
         h_size (int): The dimension of each attention head.
         is_decoder (bool): Indicates if the layer is used in a decoder, where masking of future tokens might be needed.
-        device (str): The device on which the computations will be performed.
+        device (str): Kept for backward compatibility; masks are built on the device of the inputs.
         d_rate (float): The dropout rate.
     """
 
@@ -45,7 +45,11 @@ class ResMHAtten(nn.Module):
         self.drop = nn.Dropout(d_rate)
 
     def forward(
-        self, q: torch.Tensor, kv: torch.Tensor, seq_len: torch.Tensor
+        self,
+        q: torch.Tensor,
+        kv: torch.Tensor,
+        seq_len: torch.Tensor,
+        is_self: Optional[bool] = None,
     ) -> torch.Tensor:
         """
         Forward pass of the ResMHAtten module.
@@ -53,7 +57,9 @@ class ResMHAtten(nn.Module):
         Args:
             q (torch.Tensor): The query tensor of shape (B, qT, n_emb), where B is the batch size and qT is the sequence length.
             kv (torch.Tensor): The key-value tensor of shape (B, kvT, n_emb), where kvT is the sequence length of the key-value pairs.
-            seq_len (torch.Tensor): The tensor containing the actual lengths of each sequence in the batch.
+            seq_len (torch.Tensor): The actual length of each key-value sequence in the batch, shape (B,).
+            is_self (bool, optional): True for self-attention, False for cross-attention.
+                                      If None, it is self-attention when `kv` is the same tensor object as `q`.
 
         Returns:
             torch.Tensor: The output tensor after applying multi-head attention and residual connection, of shape (B, qT, n_emb).
@@ -62,15 +68,17 @@ class ResMHAtten(nn.Module):
         B, qT, _ = q.shape
         _, kvT, _ = kv.shape
 
-        # is self atten or cross atten
-        is_self = torch.equal(kv, q)
+        # is self atten or cross atten (an explicit flag, not a value comparison:
+        # comparing values costs a full pass over the tensors and can be fooled)
+        if is_self is None:
+            is_self = kv is q
 
         # fork for res con
-        oq = q.clone()
+        oq = q
 
         # pre-norm (diff than original tranfsormer)
         q = self.ln(q)
-        kv = self.ln(kv) if is_self else kv
+        kv = q if is_self else kv  # cross-attn: kv is the encoder output, already normalized
 
         # q, k, v --> qp, kp, vp    [B, xT, C]
         qp = self.q_proj(q)
@@ -81,7 +89,7 @@ class ResMHAtten(nn.Module):
         kp = kp.contiguous().view(B, kvT, self.n_head, self.h_size)
         vp = vp.contiguous().view(B, kvT, self.n_head, self.h_size)
 
-        # [B, xT, h, nh] ==> [B * nh, xT, h]
+        # [B, xT, nh, h] ==> [B * nh, xT, h]
         qp = qp.permute(0, 2, 1, 3).contiguous().view(-1, qT, self.h_size)
         kp = kp.permute(0, 2, 1, 3).contiguous().view(-1, kvT, self.h_size)
         vp = vp.permute(0, 2, 1, 3).contiguous().view(-1, kvT, self.h_size)
@@ -90,23 +98,16 @@ class ResMHAtten(nn.Module):
         attn = torch.bmm(qp, kp.permute(0, 2, 1))
         attn = (1.0 / math.sqrt(self.h_size)) * attn  # /sqrt(h)
 
-        # pad mask
-        valid_pos = (
-            torch.LongTensor(range(kvT))
-            .unsqueeze(0)
-            .unsqueeze(0)
-            .expand_as(attn)
-            .to(self.device)
-        )
-        mask = valid_pos < seq_len.repeat_interleave(self.n_head).unsqueeze(
-            1
-        ).unsqueeze(2).expand_as(attn)
-        attn = attn.masked_fill(~mask, -float("inf"))
+        # pad mask: key j is visible only if j < seq_len  [B * nh, 1, kvT]
+        valid_pos = torch.arange(kvT, device=attn.device).view(1, 1, kvT)
+        mask = valid_pos < seq_len.to(attn.device).repeat_interleave(self.n_head).view(-1, 1, 1)
 
-        # self atten mask
+        # self atten mask: query i only sees keys j <= i  [1, qT, kvT]
         if self.is_decoder and is_self:
-            hide_future_toks = torch.ones_like(attn).tril().bool().to(self.device)
-            attn = attn.masked_fill(~hide_future_toks, -float("inf"))
+            causal = torch.ones(qT, kvT, dtype=torch.bool, device=attn.device).tril()
+            mask = mask & causal.unsqueeze(0)
+
+        attn = attn.masked_fill(~mask, -float("inf"))
 
         # softmax + dropout
         attn = self.drop(self.smax(attn))

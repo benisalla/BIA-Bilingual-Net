@@ -103,7 +103,7 @@ class Encoder(nn.Module):
         x = self.drop(tok_emb + pos_emb)
 
         for attn, ffnet in self.blocks:
-            x = attn(q=x, kv=x, seq_len=seq_len)
+            x = attn(q=x, kv=x, seq_len=seq_len, is_self=True)
             x = ffnet(x)
 
         x = self.ln(x)

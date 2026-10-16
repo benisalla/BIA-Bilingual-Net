@@ -1,0 +1,1 @@
+"""Streamlit translation app."""

@@ -1,139 +1,106 @@
-import torch
+"""
+Fine-tune a trained BIALinguaNet on new (or the same) data with a smaller learning rate.
+
+    python -m translation_engine.finetune --direction dr-en --data-dir path/to/new_data
+
+It starts from the trained checkpoint (default translation_engine/src/checkpoints/<src>_<tgt>_chpts.pth.tar),
+continues the learning-rate schedule where training stopped, scaled by `finetune_lr_scale` (0.1),
+and saves the best fine-tuned model to a separate file so the original is never overwritten.
+"""
+
+import argparse
 import os
+
+import torch
+
 from translation_engine.core.config import Config
-from translation_engine.data.dataloader import DataLoader
-from translation_engine.model.BIALinguaNet import BIALinguaNet
+from translation_engine.data.dataloader import DataLoader, build_tokenizer
 from translation_engine.model.LSRCrossEntropy import LSRCrossEntropy
-from transformers import AutoTokenizer
-from translation_engine.model.utils import (
-    live_plot_dual,
-    load_checkpoint,
-    save_checkpoint,
-    trainer,
-    validator,
-)
+from translation_engine.model.utils import fit, load_checkpoint
 
-# Build configs
-config = Config()
 
-# Initialize tokenizer
-tokenizer = AutoTokenizer.from_pretrained("gpt2")
-tokenizer.add_special_tokens(
-    {"pad_token": "<PAD>", "bos_token": "<SOS>", "eos_token": "<EOS>"}
-)
+def build_parser():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--direction", choices=["dr-en", "en-dr"], default="dr-en")
+    parser.add_argument("--data-dir", default=None, help="folder with train.json / val.json")
+    parser.add_argument("--pretrained", default=None, help="checkpoint to start from")
+    parser.add_argument("--output", default=None, help="where to save the fine-tuned model")
+    parser.add_argument("--epochs", type=int, default=None, help="number of fine-tuning epochs")
+    parser.add_argument("--lr-scale", type=float, default=None, help="multiplier on the learning rate")
+    return parser
 
-config.set_vocab_size(tokenizer=tokenizer)
 
-print(config)
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    s_suffix, t_suffix = args.direction.split("-")
 
-# Initialize data-loaders
-train_loader = DataLoader(
-    data_dir=config.data_dir,
-    s_suffix=config.s_suffix,
-    t_suffix=config.t_suffix,
-    split="train",
-    toks_in_batch=config.toks_in_batch,
-)
+    # Build configs
+    overrides = {"s_suffix": s_suffix, "t_suffix": t_suffix}
+    if args.data_dir:
+        overrides["data_dir"] = args.data_dir
+    if args.epochs:
+        overrides["finetune_epochs"] = args.epochs
+    if args.lr_scale:
+        overrides["finetune_lr_scale"] = args.lr_scale
+    config = Config(**overrides)
 
-val_loader = DataLoader(
-    data_dir=config.data_dir,
-    s_suffix="dr",
-    t_suffix="en",
-    split="val",
-    toks_in_batch=config.toks_in_batch,
-)
+    pretrained_model_path = args.pretrained or config.checkpoints_path
+    output_path = args.output or pretrained_model_path.replace("_chpts", "_finetuned_chpts")
+    if not os.path.exists(pretrained_model_path):
+        raise SystemExit(f"No pre-trained model found at {pretrained_model_path}. Train one first.")
 
-# Load pre-trained
-pretrained_model_path = "your pre-trained model path"  
+    # Initialize tokenizer
+    tokenizer = build_tokenizer(config.tokenizer_name)
+    config.set_vocab_size(tokenizer=tokenizer)
 
-model = BIALinguaNet(
-    ev_size=config.ev_size,
-    dv_size=config.dv_size,
-    n_emb=config.n_emb,
-    n_head=config.n_head,
-    h_size=config.h_size,
-    n_block=config.n_block,
-    exp_fac=config.exp_fac,
-    max_seq_len=config.max_seq_len,
-    d_rate=config.d_rate,
-    device=config.device,
-)
+    # Load the pre-trained model; its own init args (sizes) are used, not the config's
+    model, _, start_epoch = load_checkpoint(file_path=pretrained_model_path, device=config.device)
+    print(f"Pre-trained model loaded from {pretrained_model_path} (trained {start_epoch} epochs) ...")
+    config.max_seq_len = model.max_seq_len
+    config.n_emb = model.n_emb  # the lr schedule depends on it
 
-# Load pre-trained model and adjust for fine-tuning
-pretrained_model_path = "./translation_engine/src/checkpoints/dr_en_chpts.pth.tar"
-if os.path.exists(pretrained_model_path):
-    model, optimizer, config.start_epoch = load_checkpoint(
-        file_path=pretrained_model_path,
-        device=config.device,
-        lr=config.lr * 0.1,
-        beta1=config.betas[0],
-        beta2=config.betas[1],
+    # Initialize data-loaders (validation uses the same direction as training)
+    loader_args = dict(
+        data_dir=config.data_dir,
+        s_suffix=config.s_suffix,
+        t_suffix=config.t_suffix,
+        toks_in_batch=config.toks_in_batch,
+        tokenizer=tokenizer,
+        max_seq_len=config.max_seq_len,
+    )
+    train_loader = DataLoader(split="train", **loader_args)
+    val_loader = DataLoader(split="val", **loader_args)
+
+    # Fresh optimizer: fine-tuning data may differ, old Adam moments would not fit it
+    optimizer = torch.optim.Adam(
+        params=[p for p in model.parameters() if p.requires_grad],
+        lr=config.lr * config.finetune_lr_scale,
+        betas=config.betas,
         eps=config.eps,
         weight_decay=config.weight_decay,
     )
-    print("Pre-trained model loaded for fine-tuning ...")
-else:
-    print("No pre-trained model found. Training from scratch ...")
-    exit()
 
-fine_tune_lr = config.lr * 0.1 
-optimizer = torch.optim.Adam(
-    params=[p for p in model.parameters() if p.requires_grad],
-    lr=fine_tune_lr,
-    betas=config.betas,
-    eps=config.eps,
-    weight_decay=config.weight_decay,
-)
+    # Loss fun
+    criterion = LSRCrossEntropy(eps=config.label_smoothing, device=config.device)
 
-# Loss fun
-criterion = LSRCrossEntropy(eps=config.label_smoothing, device=config.device)
+    model = model.to(config.device)
+    criterion = criterion.to(config.device)
 
-model = model.to(config.device)
-criterion = criterion.to(config.device)
-
-# Find total epochs to train
-epochs = (config.n_steps // (train_loader.n_batches // config.batches_per_step)) + 1
-
-# Start 
-stats = {
-    "train_loss_value": [],
-    "train_loss_avg": [],
-    "val_loss_value": [],
-    "val_loss_avg": [],
-}
-
-print("Fine-tuning started ...")
-for epoch in range(config.start_epoch, epochs):
-    step = epoch * train_loader.n_batches // config.batches_per_step
-
-    train_loader.create_batches()
-    val_loader.create_batches()
-
-    train_losses = trainer(
-        train_loader=train_loader,
+    print("Fine-tuning started ...")
+    return fit(
+        config=config,
         model=model,
-        criterion=criterion,
         optimizer=optimizer,
-        epoch=epoch,
-        step=step,
-        device=config.device,
-        batches_per_step=config.batches_per_step,
-        epochs=epochs,
-        warmup_steps=config.warmup_steps,
-        n_emb=config.n_emb,
-        grad_clip=config.grad_clip,
+        criterion=criterion,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        start_epoch=start_epoch,
+        epochs=start_epoch + config.finetune_epochs,
+        lr_scale=config.finetune_lr_scale,
+        save_path=output_path,
+        plot_path=os.path.splitext(output_path)[0].replace(".pth", "") + "_loss.png",
     )
 
-    val_losses = validator(
-        val_loader=val_loader, model=model, criterion=criterion, device=config.device
-    )
 
-    stats["train_loss_value"].append(train_losses.value)
-    stats["train_loss_avg"].append(train_losses.avg)
-    stats["val_loss_value"].append(val_losses.value)
-    stats["val_loss_avg"].append(val_losses.avg)
-
-    live_plot_dual(stats, figsize=(12, 5), title=f"Epoch {epoch + 1}/{epochs}")
-
-    if epoch % 10 == 0 and epoch > 0:
-        save_checkpoint(epoch, model, optimizer, file_path=config.checkpoints_path)
+if __name__ == "__main__":
+    main()

@@ -1,7 +1,12 @@
+import html
+import os
+
 import streamlit as st
-import time
 from translation_engine.app.HTMLS import SMILE_SPINNER
 from translation_engine.app.utils import (
+    CHECKPOINTS_DIR,
+    IMG_DIR,
+    MODEL_FILES,
     add_background_image,
     init_session_state,
 )
@@ -12,7 +17,7 @@ def main():
     init_session_state(st)
 
     # Set background image
-    bk_img = "./translation_engine/src/img/image_3.jpg"
+    bk_img = os.path.join(IMG_DIR, "image_3.jpg")
     add_background_image(bk_img, st)
 
     # ==============================[ Main Page ]================================
@@ -43,7 +48,8 @@ def main():
     )
 
     in_text = st.text_area(
-        "",
+        "Text to translate",
+        label_visibility="collapsed",
         height=20,
         max_chars=500,
         placeholder="Type your text here...",
@@ -72,7 +78,12 @@ def main():
         unsafe_allow_html=True,
     )
     temperature = st.sidebar.slider(
-        "Temperature:", min_value=0.0, max_value=10.0, value=0.0, step=0.01
+        "Temperature:",
+        min_value=0.1,
+        max_value=5.0,
+        value=1.0,
+        step=0.05,
+        help="1.0 = the model's own probabilities, lower = more confident, higher = more varied.",
     )
 
     top_k = st.sidebar.slider(
@@ -100,11 +111,15 @@ def main():
     )
 
     # Load the appropriate model
-    model = (
-        st.session_state.en_dr_model
-        if tran_drt == "English to Darija"
-        else st.session_state.dr_en_model
-    )
+    model_key = "en_dr_model" if tran_drt == "English to Darija" else "dr_en_model"
+    model = st.session_state[model_key]
+    if model is None:
+        st.error(
+            f"No trained model for '{tran_drt}': expected "
+            f"{os.path.join(CHECKPOINTS_DIR, MODEL_FILES[model_key])}. "
+            "Train one with `python -m translation_engine.train` (see the README)."
+        )
+        return
 
     st.sidebar.markdown('<hr class="hr-style">', unsafe_allow_html=True)
 
@@ -129,13 +144,13 @@ def main():
 
         spinner_holder.empty()
 
-    if "best_hypo" in st.session_state and st.session_state.best_hypo:
-        if st.session_state.best_hypo:
+    if "best_hypo" in st.session_state:
+        if st.session_state.best_hypo.strip():
             st.markdown(
                 f"""
                 <div style='background-color: rgb(38 39 48); color: white !important; padding: 4px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ecb252;'>
-                    <div style='direction: rtl; text-align: left; font-size: 1.2em; color: rgb(240, 177, 73); padding: 10px;'>
-                        {st.session_state.best_hypo} 
+                    <div dir='auto' style='text-align: start; font-size: 1.2em; color: rgb(240, 177, 73); padding: 10px;'>
+                        {html.escape(st.session_state.best_hypo)}
                     </div>
                 </div>
                 """,
@@ -149,9 +164,9 @@ def main():
                 for hypo in sorted_hypos:
                     st.markdown(
                         f"""
-                        <div style='direction: rtl; display: flex; justify-content: space-between; align-items: center; background-color: #34495E; padding: 10px; border-radius: 8px; margin-bottom: 10px;'>
+                        <div style='display: flex; justify-content: space-between; align-items: center; background-color: #34495E; padding: 10px; border-radius: 8px; margin-bottom: 10px;'>
                             <span style='color: rgb(233 172 72);'>{'[Score: {:.2f}]'.format(hypo['score'])}</span>
-                            <span style='color: #ECF0F1; font-size: 1.1em; text-align: right;'>{hypo['hypothesis']}</span>
+                            <span dir='auto' style='color: #ECF0F1; font-size: 1.1em; text-align: start;'>{html.escape(hypo['hypothesis'])}</span>
                         </div>
                         """,
                         unsafe_allow_html=True,

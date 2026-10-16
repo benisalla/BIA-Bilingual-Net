@@ -38,7 +38,7 @@ class ResFFNet(nn.Module):
                             maintaining the input shape (B, T, n_emb).
         """
 
-        o_x = x.clone()  # fork
+        o_x = x  # fork (no copy needed: x is not modified in place)
         x = self.ln(x)  # norm
 
         # feedforward

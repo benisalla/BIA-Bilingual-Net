@@ -146,7 +146,7 @@ class BIALinguaNet(nn.Module):
         self,
         sx,
         tokenizer,
-        temperature: float = 0.0,
+        temperature: float = 1.0,
         beam_size: int = 4,
         len_norm_coeff: float = 0.6,
         top_k: int = 50,
@@ -158,20 +158,21 @@ class BIALinguaNet(nn.Module):
         Perform translation using beam search decoding.
 
         Args:
-            sx (str or torch.Tensor): Source sentence or tensor to translate.
-            tokenizer: Tokenizer object for encoding/decoding sentences.
-            temperature (float): Temperature parameter for controlling randomness in predictions.
+            sx (str or torch.Tensor): Source sentence, or a (1, T) tensor of source token ids.
+            tokenizer: Tokenizer object for encoding/decoding sentences (with <PAD>, <SOS>, <EOS> added).
+            temperature (float): Softmax temperature. 1.0 keeps the model's probabilities, < 1 sharpens, > 1 flattens.
             beam_size (int): Number of beams to use in beam search.
-            len_norm_coeff (float): Length normalization coefficient to balance sentence length during decoding.
-            is_ltr (bool): Whether to reverse the output sequence (useful for autoregressive decoding).
-            max_beam_fork (int): Maximum number of steps to consider in beam search.
+            len_norm_coeff (float): Length normalization coefficient (0 = no normalization, longer sentences are penalized).
+            top_k (int): Each beam only expands its `top_k` most likely next tokens (0 = no limit).
+            top_p (float): Each beam only expands the smallest set of tokens whose probability sums to `top_p` (1.0 = no limit).
+            is_ltr (bool): Reverse each decoded string (for models trained on reversed targets, see the data loader).
+            max_beam_fork (int): Maximum number of tokens to generate (also capped by the model's `max_seq_len`).
 
         Returns:
-            tuple: A tuple containing the best hypothesis (translated sentence) and all hypotheses with their scores.
+            tuple: The best hypothesis (translated sentence) and the list of all hypotheses with their scores.
         """
 
-        device = self.device
-        self = self.to(device)
+        device = next(self.parameters()).device
         self.eval()
 
         k = beam_size  # Beam size
@@ -183,7 +184,9 @@ class BIALinguaNet(nn.Module):
             ex = torch.LongTensor(ex).unsqueeze(0)
         else:
             ex = sx
-        ex = ex.to(device)
+        ex = ex[:, : self.max_seq_len].to(device)  # longer inputs would overflow the position table
+        if ex.size(1) == 0:
+            return "", []
         e_seq_len = torch.LongTensor([ex.size(1)]).to(device)
 
         # Encoder Forward
@@ -198,25 +201,31 @@ class BIALinguaNet(nn.Module):
         com_hypo = list()
         com_hypo_scores = list()
 
+        # the decoder input has `step` tokens, so it must stay <= max_seq_len
+        max_steps = max(1, min(max_beam_fork, self.max_seq_len))
+        temperature = max(temperature, 1e-5)
+
         step = 1
         while True:
             s = hypo.size(0)  # s
             logits = self.decoder(
                 d_idx=hypo,
                 d_seq_len=hypo_len,
-                e_x=ex.repeat(s, 1, 1),
-                e_seq_len=e_seq_len.repeat(s),
+                e_x=ex.expand(s, -1, -1),
+                e_seq_len=e_seq_len.expand(s),
             )  # [s, step, vs]
             flogits = self.top_k_top_p_filtering(
                 logits=logits[:, -1, :], top_k=top_k, top_p=top_p
             )
-            scores = flogits / max(temperature + 1.0, 1e-8)  # [s, vs]
+            scores = flogits / temperature  # [s, vs]
             scores = F.log_softmax(scores, dim=-1)      # [s, vs]
             scores = hypo_scores.unsqueeze(1) + scores  # prev scores + curr scores
 
-            top_k_hypo_scores, fttn_idx = scores.view(-1).topk(
-                k, 0, True, True
-            )  # top(vs) = k
+            # only expand candidates that survived top-k / top-p (finite score);
+            # otherwise -inf "beams" with random tokens would fill the beam
+            scores = scores.view(-1)
+            n_cand = min(k, int(torch.isfinite(scores).sum().item()))
+            top_k_hypo_scores, fttn_idx = scores.topk(n_cand, 0, True, True)  # [k]
 
             prev_tok_idx = fttn_idx // vs  # prev [k]
             next_tok_idx = fttn_idx % vs   # next [k]
@@ -233,17 +242,22 @@ class BIALinguaNet(nn.Module):
             )  # chance(long sentence ~ short sentence)
             com_hypo_scores.extend((top_k_hypo_scores[complete] / norm).tolist())
 
-            if len(com_hypo) >= n_hypo:
-                break  # enough hypos
-
             hypo = top_k_hypo[~complete]  # [s, step + 1] incomplete hypos
             hypo_scores = top_k_hypo_scores[~complete]  # d_idx(s): [s]
+
+            # enough hypos, and no unfinished beam can still beat the best finished one
+            # (stopping at the first n_hypo endings kept short, unlikely sentences
+            # that happened to end early instead of the likely longer one)
+            if len(com_hypo) >= n_hypo and (
+                hypo.size(0) == 0 or hypo_scores.max().item() / norm <= max(com_hypo_scores)
+            ):
+                break
             hypo_len = torch.LongTensor(hypo.size(0) * [hypo.size(1)]).to(
                 device
             )  # d_seq_len: [s]
 
-            if step > max_beam_fork:
-                break  # stop if no EOS is found
+            if hypo.size(0) == 0 or step >= max_steps:
+                break  # every beam ended, or no EOS was found in time
             step += 1
 
         if len(com_hypo) == 0:  # in case no EOS is found
@@ -283,8 +297,22 @@ class BIALinguaNet(nn.Module):
         filter_value: float = -float("Inf"),
         min_tokens_to_keep: int = 1,
     ) -> torch.Tensor:
+        """
+        Keep only the top-k tokens and/or the smallest set of tokens with cumulative probability >= top_p.
+
+        Args:
+            logits (torch.Tensor): Logits of shape (B, vocab_size). Not modified (a filtered copy is returned).
+            top_k (int): Keep the `top_k` highest logits per row (0 = keep all).
+            top_p (float): Nucleus threshold in (0, 1] (1.0 = keep all).
+            filter_value (float): Value given to removed logits.
+            min_tokens_to_keep (int): Always keep at least this many tokens per row.
+
+        Returns:
+            torch.Tensor: The filtered logits, same shape as `logits`.
+        """
+        logits = logits.clone()
         if top_k > 0:
-            top_k = min(max(top_k, min_tokens_to_keep), logits.size(-1)) 
+            top_k = min(max(top_k, min_tokens_to_keep), logits.size(-1))
             indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
             logits[indices_to_remove] = filter_value
 

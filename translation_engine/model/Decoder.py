@@ -1,8 +1,6 @@
 import math
 import torch
 from torch import nn
-from torch.nn import functional as F
-from typing import Optional
 
 from translation_engine.model.ResFFNet import ResFFNet
 from translation_engine.model.ResMHAtten import ResMHAtten
@@ -116,15 +114,15 @@ class Decoder(nn.Module):
                 f"Sequence length dT = {dT} exceeds maximum allowed seq_len = {self.max_seq_len}"
             )
 
-        pos = torch.arange(dT, dtype=torch.long, device=self.device)
+        pos = torch.arange(dT, dtype=torch.long, device=d_idx.device)
         tok_emb = self.tok_emb(d_idx) * math.sqrt(self.n_emb)
         pos_emb = self.pos_emb(pos)
 
         d_idx = self.drop(tok_emb + pos_emb)
 
         for self_attn, cross_attn, ffnet in self.blocks:
-            d_idx = self_attn(q=d_idx, kv=d_idx, seq_len=d_seq_len)
-            d_idx = cross_attn(q=d_idx, kv=e_x, seq_len=e_seq_len)
+            d_idx = self_attn(q=d_idx, kv=d_idx, seq_len=d_seq_len, is_self=True)
+            d_idx = cross_attn(q=d_idx, kv=e_x, seq_len=e_seq_len, is_self=False)
             d_idx = ffnet(d_idx)
 
         d_idx = self.ln(d_idx)

@@ -2,7 +2,9 @@
 __pycache__/
 /__pycache__/
 *.pyc
-*./ipynb
+.pytest_cache/
+.venv/
+.ipynb_checkpoints/
 
 # Ignore specific directories
 translation_engine/app/abc_dir/
@@ -10,6 +12,8 @@ translation_engine/app/abc_dir/
 translation_engine/src/checkpoints/
 translation_engine/src/dataset/
 translation_engine/src/tokenizer/
+checkpoints/
+*.pth.tar
 
 # Ignore specific file types
 *.sf2

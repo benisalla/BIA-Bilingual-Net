@@ -216,9 +216,10 @@ def test_train_overfit_then_finetune_then_app(data_dir, tmp_path, small_scripts,
     assert stats["val_loss_avg"][-1] < 0.1, stats["val_loss_avg"][-5:]
     assert ckpt.exists()
 
-    # resume: a second run continues from the saved epoch
+    # resume: a second run continues after the saved (best) epoch, not from 0
+    saved_epoch = torch.load(ckpt, map_location="cpu")["epoch"]
     stats = train_module.main(["--epochs", "62", "--data-dir", str(data_dir), "--checkpoint", str(ckpt)])
-    assert 1 <= len(stats["val_loss_avg"]) <= 3
+    assert len(stats["val_loss_avg"]) == 62 - (saved_epoch + 1)
 
     out = tmp_path / "ckpt" / "ft.pth.tar"
     finetune_module.main(

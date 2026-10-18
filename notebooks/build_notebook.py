@@ -43,9 +43,9 @@ def code(text: str) -> None:
 
 # ---------------------------------------------------------------------------
 md("""
-# BIA-Bilingual-Net: training notebook (Kaggle & Colab)
+# Bilingual Net: training notebook (Kaggle & Colab)
 
-Train the **Darija ⇄ English** BIALinguaNet translator on a **free Kaggle or Colab GPU**.
+Train the **Darija ⇄ English** Bilingual Net translator on a **free Kaggle or Colab GPU**.
 The notebook is **self-contained**: section 2 writes the `translation_engine` package
 (identical to the repo), and training goes through the same `fit()` loop as
 `python -m translation_engine.train`, with the **same default configuration**.

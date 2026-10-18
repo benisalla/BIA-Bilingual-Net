@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "translation_engine"
 version = "0.1.0"
-description = "BIALinguaNet: a from-scratch Transformer that translates Moroccan Darija <-> English."
+description = "Bilingual Net: a Transformer that translates Moroccan Darija <-> English."
 authors = ["Ben alla ismail <ismailbenalla@gmail.com>"]
 readme = "README.md"
 

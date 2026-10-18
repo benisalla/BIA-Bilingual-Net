@@ -1,1 +1,1 @@
-"""BIA-Bilingual-Net: Moroccan Darija <-> English translation with BIALinguaNet."""
+"""bilingual-net: Moroccan Darija <-> English translation with BIALinguaNet."""

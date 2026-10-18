@@ -1,10 +1,10 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/9b132fc8-bf47-4447-923c-06ada44c9985" width="200" height="200"/>
-  <h1>BIALinguaNet: Transformer-Based Language Translation Architecture</h1>
+  <h1>Bilingual Net: Transformer-Based Language Translation Architecture</h1>
   <p>A custom implementation of a language translation model using Transformer architecture, enhanced with some fancy modifications. 😁</p>
 
   <p>
-    <a href="https://colab.research.google.com/github/benisalla/BIA-Bilingual-Net/blob/main/notebooks/train_colab_kaggle.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+    <a href="https://colab.research.google.com/github/benisalla/bilingual-net/blob/main/notebooks/train_colab_kaggle.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
     <img src="https://img.shields.io/badge/python-3.11%2B-blue.svg" alt="Python 3.11+"/>
     <img src="https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg" alt="PyTorch"/>
     <img src="https://img.shields.io/badge/app-Streamlit-ff4b4b.svg" alt="Streamlit"/>
@@ -13,7 +13,7 @@
 </div>
 
 **Type a sentence in Moroccan Darija, get it in English, and the other way around.**
-BIALinguaNet is an encoder-decoder Transformer written from scratch in plain PyTorch
+Bilingual Net is an encoder-decoder Transformer written from scratch in plain PyTorch
 (attention, masks, beam search, label-smoothed loss, learning-rate schedule), trained on
 Darija ⇄ English sentence pairs and served in a Streamlit app.
 
@@ -49,7 +49,7 @@ Darija ⇄ English sentence pairs and served in a Streamlit app.
   <p><em>Click the image above to watch the video on YouTube.</em></p>
 </div>
 
-BIALinguaNet uses powerful Transformer architectures to provide a reliable language translation system. Designed with simplicity and effectiveness in mind, this project makes it easier to develop neural networks for natural language processing, suitable for both academic research and practical use.
+Bilingual Net uses powerful Transformer architectures to provide a reliable language translation system. Designed with simplicity and effectiveness in mind, this project makes it easier to develop neural networks for natural language processing, suitable for both academic research and practical use.
 
 The model is versatile, allowing adjustments to meet various language and translation needs. By changing the transformer's input settings and the formats of the data being translated, users can customize the system to fit their specific requirements.
 
@@ -98,7 +98,7 @@ Every hyper-parameter lives in [`translation_engine/core/config.py`](translation
 
 ## Project Structure
 ```
-BIA-Bilingual-Net
+bilingual-net
 │
 ├── translation_engine
 │   ├── app                    # Streamlit application
@@ -150,8 +150,8 @@ Follow these simple steps to get a local copy up and running.
 
 1. Clone the repository
    ```sh
-   git clone https://github.com/benisalla/BIA-Bilingual-Net.git
-   cd BIA-Bilingual-Net
+   git clone https://github.com/benisalla/bilingual-net.git
+   cd bilingual-net
    ```
 2. Install dependencies using Poetry (Python ≥ 3.11)
    ```sh
@@ -335,7 +335,7 @@ We change one input token at a time and look at which output positions change:
 
 ## Translation Examples
 
-Below are demonstrations of translations performed by the BIALinguaNet model, showcasing its capabilities for both English to Darija (En to Dr) and Darija to English (Dr to En) translations.
+Below are demonstrations of translations performed by the Bilingual Net model, showcasing its capabilities for both English to Darija (En to Dr) and Darija to English (Dr to En) translations.
 
 #### Scripts Used for Generating Examples:
 
@@ -391,7 +391,7 @@ display_translations(translate_all(["fin awa ghadi?", "Mashi mochkil"], model, t
 | `max_beam_fork` | maximum number of generated tokens (also capped by the model's `max_seq_len`) |
 
 #### Visual Examples:
-The following images provide visual confirmations of the translations facilitated by BIALinguaNet:
+The following images provide visual confirmations of the translations facilitated by Bilingual Net:
 
 **From Darija to English:**
 ![Darija to English Translation Example](https://github.com/user-attachments/assets/d2ea08ac-e727-4694-871e-aa168d73a70e)
@@ -435,10 +435,10 @@ This project is made available under **fair use guidelines**. While there is no 
 
 ```bibtex
 @misc{bialinguanet_2024,
-  title={BIALinguaNet: Transformer-based Language Translation Architecture},
+  title={Bilingual Net: Transformer-based Language Translation Architecture},
   author={Ben Alla Ismail},
   year={2024},
-  url={https://github.com/benisalla/BIA-Bilingual-Net}
+  url={https://github.com/benisalla/bilingual-net}
 }
 ```
 
@@ -473,6 +473,6 @@ In my pursuit of knowledge, I am driven to advance AI, deep learning, and machin
 ---
 
 <div align="center">
-  <h4>🌐📚🔁 Dive into the world of language with BIA LinguaNet—experience seamless Moroccan Darija to English translations and vice versa! 🌐📚🔁</h4>
+  <h4>🌐📚🔁 Dive into the world of language with Bilingual Net—experience seamless Moroccan Darija to English translations and vice versa! 🌐📚🔁</h4>
   <img src="https://github.com/user-attachments/assets/b7e5feab-642d-4b22-a82b-3cbe5b0a1fe4" width="500" height="400"/>
 </div>

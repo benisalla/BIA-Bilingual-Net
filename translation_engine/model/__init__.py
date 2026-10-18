@@ -1,1 +1,1 @@
-"""BIALinguaNet: encoder, decoder, attention, loss and training utilities."""
+"""Bilingual Net: encoder, decoder, attention, loss and training utilities."""

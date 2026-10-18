@@ -40,7 +40,7 @@ def main():
                 letter-spacing: 2px;
                 text-shadow: rgb(132 126 126) 5px -6px 5px;
                 ">
-                🌐 BIA Lingua-Net Translator 🌐
+                🌐 Bilingual Net Translator 🌐
             </h1>
         </div>
         """,
